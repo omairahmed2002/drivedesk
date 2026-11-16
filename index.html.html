@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DriveDesk – Car Rental Management and Online Booking</title>
+<style>
+:root{--bg:#f4f5f2;--sf:#fff;--ink:#14212b;--mut:#5d6b76;--ln:#d9ded9;--pri:#0d5c63;--pri-t:#fff;--acc:#e0a100;--ok:#237a3b;--bad:#b3261e;--wn:#8a5a00;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171c;--sf:#192229;--ink:#e8eeee;--mut:#9aa8b0;--ln:#2b3841;--pri:#4fb3ba;--pri-t:#08262a;--acc:#f0b929;--ok:#5fcf7c;--bad:#ff8a80;--wn:#f0b929;color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{background:var(--sf);border-bottom:1px solid var(--ln);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.bar{max-width:1080px;margin:auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.3px;margin-right:auto}.logo b{color:var(--acc)}
+nav button{background:none;border:0;color:var(--mut);font:inherit;padding:6px 10px;border-radius:6px;cursor:pointer}
+nav button.on{color:var(--ink);box-shadow:inset 0 -2px var(--acc)}
+main{max-width:1080px;margin:auto;padding:18px 16px 60px}
+h1{font-size:26px;letter-spacing:-.5px;margin:6px 0 4px}h2{font-size:18px;margin:0 0 10px}p.sub{color:var(--mut);margin:0 0 16px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;background:var(--sf);border:1px solid var(--ln);padding:12px;border-radius:10px;margin-bottom:16px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:7px 8px;width:100%}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.card .img{height:110px;display:grid;place-items:center}.card .bd{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:16px}.meta{color:var(--mut);font-size:13px}.price{font-weight:700;font-size:17px}
+.btn{background:var(--pri);color:var(--pri-t);border:0;border-radius:7px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+.btn.alt{background:none;color:var(--ink);border:1px solid var(--ln)}.btn.bad{background:var(--bad);color:#fff}.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--ln)}
+.s-pending{color:var(--wn);border-color:var(--wn)}.s-approved{color:var(--ok);border-color:var(--ok)}.s-rejected,.s-cancelled{color:var(--bad);border-color:var(--bad)}.s-completed{color:var(--mut)}
+.panel{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px;margin-bottom:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:560px){.two{grid-template-columns:1fr}}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--ln);font-size:14px;vertical-align:middle}th{color:var(--mut);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi b{display:block;font-size:22px}
+.calc td{padding:4px 0;border:0}.calc tr.t td{border-top:1px solid var(--ln);font-weight:700;padding-top:8px}
+.msg{padding:9px 12px;border-radius:7px;margin-bottom:12px;border:1px solid var(--ln);background:var(--sf)}.msg.e{border-color:var(--bad);color:var(--bad)}.msg.k{border-color:var(--ok);color:var(--ok)}
+.chk{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:14px}.chk input{width:auto}
+.bar2{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.empty{padding:30px;text-align:center;color:var(--mut)}
+</style></head><body>
+<header><div class="bar"><div class="logo">Drive<b>Desk</b></div><nav id="nav"></nav></div></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pkr=n=>'PKR '+Math.round(n).toLocaleString('en-PK'),iso=d=>d.toISOString().slice(0,10),today=iso(new Date());
+const SERV={gps:['GPS navigation',300],seat:['Child seat',200],ins:['Full insurance',800]},DRV=2500;
+const seed=()=>({users:[{id:1,name:'Admin',email:'admin@drivedesk.pk',pw:'admin123',role:'admin',phone:''},{id:2,name:'Demo Customer',email:'demo@drivedesk.pk',pw:'demo123',role:'customer',phone:'0300-1234567'}],
+cars:[[1,'Suzuki Alto','Economy',4,'Manual','Petrol',6000,'#e0a100'],[2,'Toyota Yaris','Sedan',5,'Automatic','Petrol',9500,'#0d5c63'],[3,'Honda City','Sedan',5,'Automatic','Petrol',10500,'#7a8b99'],[4,'Toyota Corolla','Sedan',5,'Automatic','Hybrid',13000,'#b3261e'],[5,'Kia Sportage','SUV',5,'Automatic','Petrol',18000,'#2f4858'],[6,'Toyota Fortuner','SUV',7,'Automatic','Diesel',28000,'#222'],[7,'Hyundai Staria','Van',9,'Automatic','Diesel',30000,'#9aa8b0'],[8,'MG ZS EV','SUV',5,'Automatic','Electric',16000,'#237a3b']].map(c=>({id:c[0],name:c[1],cat:c[2],seats:c[3],trans:c[4],fuel:c[5],rate:c[6],color:c[7],active:true})),
+bookings:[],payments:[],maint:[{id:1,carId:3,from:today,to:today,note:'Oil change and brake check',cost:8500,open:true}],nid:{b:1,p:1,m:2,c:9,u:3}});
+let db;try{db=JSON.parse(localStorage.getItem('drivedesk')||'null')}catch(e){}db=db||seed();
+const save=()=>{try{localStorage.setItem('drivedesk',JSON.stringify(db))}catch(e){}};
+let S={view:'browse',user:null,tab:'bookings',f:{q:'',cat:'',seat:'',trans:'',max:'',from:today,to:iso(new Date(Date.now()+864e5*2))},sel:null,msg:null,edit:null};
+const days=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+// date-overlap validation: [from,to) overlaps if newFrom<existingTo && newTo>existingFrom
+const overlap=(a1,a2,b1,b2)=>a1<b2&&a2>b1;
+function carFree(id,from,to,ignore){const c=db.cars.find(x=>x.id==id);if(!c||!c.active)return false;
+ if(db.maint.some(m=>m.carId==id&&m.open&&overlap(from,to,m.from,iso(new Date(new Date(m.to).getTime()+864e5)))))return false;
+ return !db.bookings.some(b=>b.id!=ignore&&b.carId==id&&['pending','approved'].includes(b.status)&&overlap(from,to,b.from,b.to))}
+function quote(car,from,to,driver,svcs){const n=days(from,to),base=car.rate*n,drv=driver?DRV*n:0,sv=svcs.reduce((s,k)=>s+SERV[k][1]*n,0),sub=base+drv+sv,dp=n>=7?.1:n>=3?.05:0,disc=sub*dp,dep=driver?5000:15000;
+ return{n,base,drv,sv,disc,dp,dep,total:sub-disc,due:sub-disc+dep}}
+const carSvg=c=>`<svg viewBox="0 0 120 50" width="130" aria-hidden="true"><path d="M8 34l6-12q3-6 10-6h14l10-9q3-3 8-3h22q6 0 10 5l8 13 8 3q6 2 6 8v3H8z" fill="${c}"/><path d="M42 17l9-8h20l7 9H42z" fill="#fff" opacity=".45"/><circle cx="34" cy="38" r="8" fill="#14212b"/><circle cx="92" cy="38" r="8" fill="#14212b"/><circle cx="34" cy="38" r="3" fill="#ddd"/><circle cx="92" cy="38" r="3" fill="#ddd"/></svg>`;
+const msg=()=>{const m=S.msg;S.msg=null;return m?`<div class="msg ${m[0]}" role="status">${esc(m[1])}</div>`:''};
+const go=(v,x)=>{S.view=v;Object.assign(S,x||{});render()};
+const isAdmin=()=>S.user&&S.user.role=='admin';
+function render(){
+ $('#nav').innerHTML=[['browse','Browse cars'],...(S.user&&!isAdmin()?[['mine','My bookings']]:[]),...(isAdmin()?[['admin','Dashboard']]:[]),...(S.user?[['out',`Log out (${esc(S.user.name.split(' ')[0])})`]]:[['login','Log in'],['reg','Register']])].map(([k,l])=>`<button class="${S.view==k?'on':''}" onclick="${k=='out'?'S.user=null;go(\'browse\')':`go('${k}',{sel:null})`}">${l}</button>`).join('');
+ const v={browse,mine,login:()=>auth(0),reg:()=>auth(1),admin}[S.view];$('#app').innerHTML=(S.view=='admin'&&!isAdmin()||S.view=='mine'&&!S.user)?auth(0,'Log in to continue.'):v();
+}
+function browse(){const f=S.f;if(S.sel)return book();
+ const list=db.cars.filter(c=>c.active&&(!f.q||c.name.toLowerCase().includes(f.q.toLowerCase()))&&(!f.cat||c.cat==f.cat)&&(!f.seat||c.seats>=+f.seat)&&(!f.trans||c.trans==f.trans)&&(!f.max||c.rate<=+f.max));
+ const ok=f.from&&f.to&&f.to>f.from;const opt=(a,v)=>a.map(x=>`<option ${v==x?'selected':''}>${x}</option>`).join('');
+ return `${msg()}<h1>Find a car for your dates</h1><p class="sub">Pick pickup and return dates to see which cars are free, then book.</p>
+ <div class="filters"><label>Pickup<input type="date" min="${today}" value="${f.from}" onchange="S.f.from=this.value;render()"></label><label>Return<input type="date" min="${f.from}" value="${f.to}" onchange="S.f.to=this.value;render()"></label>
+ <label>Search<input placeholder="Model name" value="${esc(f.q)}" oninput="S.f.q=this.value;clearTimeout(window.t);window.t=setTimeout(()=>{render();$('[placeholder=\\'Model name\\']').focus()},300)"></label>
+ <label>Category<select onchange="S.f.cat=this.value;render()"><option value="">All</option>${opt(['Economy','Sedan','SUV','Van'],f.cat)}</select></label>
+ <label>Min seats<select onchange="S.f.seat=this.value;render()"><option value="">Any</option>${[4,5,7,9].map(n=>`<option ${f.seat==n?'selected':''}>${n}</option>`).join('')}</select></label>
+ <label>Transmission<select onchange="S.f.trans=this.value;render()"><option value="">Any</option>${opt(['Manual','Automatic'],f.trans)}</select></label>
+ <label>Max PKR/day<input type="number" step="1000" value="${f.max}" onchange="S.f.max=this.value;render()"></label></div>
+ ${ok?'':'<div class="msg e">Return date must be after the pickup date.</div>'}
+ ${list.length?`<div class="grid">${list.map(c=>{const free=ok&&carFree(c.id,f.from,f.to);return `<div class="card"><div class="img" style="background:${c.color}22">${carSvg(c.color)}</div><div class="bd"><h3>${esc(c.name)}</h3><div class="meta">${c.cat} · ${c.seats} seats · ${c.trans} · ${c.fuel}</div><div class="price">${pkr(c.rate)} <span class="meta">/ day</span></div>
+ <span class="tag ${free?'s-approved':'s-rejected'}" style="align-self:flex-start">${ok?(free?'Available for your dates':'Not available'):'Choose valid dates'}</span><button class="btn" style="margin-top:auto" ${free?'':'disabled'} onclick="go('browse',{sel:{id:${c.id},driver:false,svcs:[]}})">Book this car</button></div></div>`}).join('')}</div>`:'<div class="empty">No cars match these filters. Clear a filter to see more.</div>'}`}
+function book(){const s=S.sel,c=db.cars.find(x=>x.id==s.id),f=S.f,q=quote(c,f.from,f.to,s.driver,s.svcs);
+ if(!S.user)return `<div class="msg">Log in or register to complete your booking.</div>${auth(0)}`;
+ return `<button class="btn alt sm" onclick="go('browse',{sel:null})">Back to cars</button><h1>Book ${esc(c.name)}</h1><p class="sub">${f.from} to ${f.to} (${q.n} day${q.n>1?'s':''})</p>${msg()}
+ <div class="two"><div class="panel"><h2>Options</h2><label>Drive type<select onchange="S.sel.driver=this.value=='d';render()"><option value="s">Self-drive</option><option value="d" ${s.driver?'selected':''}>With driver (+${pkr(DRV)}/day)</option></select></label><p></p>
+ ${Object.entries(SERV).map(([k,[n,p]])=>`<label class="chk"><input type="checkbox" ${s.svcs.includes(k)?'checked':''} onchange="S.sel.svcs=this.checked?[...S.sel.svcs,'${k}']:S.sel.svcs.filter(x=>x!='${k}');render()">${n} (+${pkr(p)}/day)</label>`).join('')}
+ <p></p><label>Notes for the rental staff<textarea id="note" rows="2" maxlength="200"></textarea></label></div>
+ <div class="panel"><h2>Price</h2><table class="calc"><tr><td>Rental (${q.n} × ${pkr(c.rate)})</td><td align="right">${pkr(q.base)}</td></tr>${q.drv?`<tr><td>Driver</td><td align="right">${pkr(q.drv)}</td></tr>`:''}${q.sv?`<tr><td>Extra services</td><td align="right">${pkr(q.sv)}</td></tr>`:''}${q.disc?`<tr><td>Long-rental discount (${q.dp*100}%)</td><td align="right">−${pkr(q.disc)}</td></tr>`:''}<tr class="t"><td>Rental total</td><td align="right">${pkr(q.total)}</td></tr><tr><td>Refundable security deposit</td><td align="right">${pkr(q.dep)}</td></tr><tr class="t"><td>Due at pickup</td><td align="right">${pkr(q.due)}</td></tr></table>
+ <p></p><button class="btn" onclick="submitBooking()">Send booking request</button></div></div>`}
+function submitBooking(){const s=S.sel,c=db.cars.find(x=>x.id==s.id),f=S.f;
+ if(!carFree(c.id,f.from,f.to)){S.msg=['e','Sorry, this car was just booked for overlapping dates. Choose other dates or another car.'];return go('browse',{sel:null})}
+ const q=quote(c,f.from,f.to,s.driver,s.svcs);db.bookings.push({id:db.nid.b++,userId:S.user.id,carId:c.id,from:f.from,to:f.to,driver:s.driver,svcs:s.svcs,total:q.total,dep:q.dep,status:'pending',paid:false,note:($('#note').value||'').slice(0,200),created:today});save();
+ S.msg=['k','Request sent. Staff will approve it soon, then you can pay online.'];go('mine',{sel:null})}
+function mine(){const bs=db.bookings.filter(b=>b.userId==S.user.id).reverse();
+ return `${msg()}<h1>My bookings</h1><p class="sub">Track status, pay once approved, or cancel before pickup.</p>${bs.length?`<div class="wrap"><table><tr><th>#</th><th>Car</th><th>Dates</th><th>Total</th><th>Status</th><th></th></tr>${bs.map(b=>{const c=db.cars.find(x=>x.id==b.carId);return `<tr><td>${b.id}</td><td>${esc(c.name)}<div class="meta">${b.driver?'With driver':'Self-drive'}</div></td><td>${b.from} → ${b.to}</td><td>${pkr(b.total)}<div class="meta">${b.paid?'Paid':'Unpaid'}</div></td><td><span class="tag s-${b.status}">${b.status}</span></td><td>${b.status=='approved'&&!b.paid?`<button class="btn sm" onclick="pay(${b.id})">Pay now (demo)</button> `:''}${['pending','approved'].includes(b.status)&&b.from>today?`<button class="btn alt sm" onclick="setStatus(${b.id},'cancelled')">Cancel</button>`:''}</td></tr>`}).join('')}</table></div>`:'<div class="empty">No bookings yet. Browse cars to make your first one.</div>'}`}
+function pay(id){const b=db.bookings.find(x=>x.id==id);b.paid=true;db.payments.push({id:db.nid.p++,bookingId:id,amount:b.total,method:'Simulated card',date:today});save();S.msg=['k','Payment recorded. This is a simulated payment for demonstration.'];render()}
+function setStatus(id,st){const b=db.bookings.find(x=>x.id==id);b.status=st;save();S.msg=['k',`Booking #${id} ${st}.`];render()}
+function auth(reg,note){return `${msg()}<div class="panel" style="max-width:420px;margin:20px auto"><h1>${reg?'Create account':'Log in'}</h1>${note?`<p class="sub">${note}</p>`:''}<form onsubmit="return doAuth(event,${reg})" style="display:grid;gap:10px">${reg?'<label>Full name<input name="name" required maxlength="60"></label><label>Phone<input name="phone" maxlength="20"></label>':''}<label>Email<input name="email" type="email" required></label><label>Password<input name="pw" type="password" required minlength="6"></label><button class="btn">${reg?'Register':'Log in'}</button></form>${reg?'':'<p class="meta">Demo accounts: admin@drivedesk.pk / admin123 · demo@drivedesk.pk / demo123</p>'}</div>`}
+function doAuth(e,reg){e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),em=f.email.trim().toLowerCase();
+ if(reg){if(db.users.some(u=>u.email==em)){S.msg=['e','That email is already registered. Log in instead.'];render();return false}
+  S.user={id:db.nid.u++,name:f.name.trim(),email:em,pw:f.pw,role:'customer',phone:f.phone};db.users.push(S.user);save();S.msg=['k','Welcome! Your account is ready.']}
+ else{const u=db.users.find(u=>u.email==em&&u.pw==f.pw);if(!u){S.msg=['e','Email or password is incorrect.'];render();return false}S.user=u;S.msg=['k','Logged in.']}
+ go(isAdmin()?'admin':S.sel?'browse':'browse');return false}
+function admin(){const T=[['bookings','Bookings'],['fleet','Vehicles'],['maint','Maintenance'],['pay','Payments'],['cust','Customers'],['rep','Reports']];
+ const body={bookings:aBook,fleet:aFleet,maint:aMaint,pay:aPay,cust:aCust,rep:aRep}[S.tab]();
+ return `${msg()}<h1>Admin dashboard</h1><div class="bar2">${T.map(([k,l])=>`<button class="btn ${S.tab==k?'':'alt'} sm" onclick="S.tab='${k}';render()">${l}</button>`).join('')}</div>${body}`}
+const cn=id=>esc((db.cars.find(c=>c.id==id)||{}).name),un=id=>esc((db.users.find(u=>u.id==id)||{}).name);
+function aBook(){const bs=[...db.bookings].reverse();return bs.length?`<div class="wrap"><table><tr><th>#</th><th>Customer</th><th>Car</th><th>Dates</th><th>Total</th><th>Status</th><th></th></tr>${bs.map(b=>`<tr><td>${b.id}</td><td>${un(b.userId)}</td><td>${cn(b.carId)}</td><td>${b.from} → ${b.to}</td><td>${pkr(b.total)}${b.paid?' ✓':''}</td><td><span class="tag s-${b.status}">${b.status}</span></td><td>${b.status=='pending'?`<button class="btn sm" onclick="setStatus(${b.id},'approved')">Approve</button> <button class="btn bad sm" onclick="setStatus(${b.id},'rejected')">Reject</button>`:b.status=='approved'?`<button class="btn alt sm" onclick="setStatus(${b.id},'completed')">Mark returned</button>`:''}</td></tr>`).join('')}</table></div>`:'<div class="empty">No booking requests yet.</div>'}
+function aFleet(){const e=S.edit,c=e||{name:'',cat:'Sedan',seats:5,trans:'Automatic',fuel:'Petrol',rate:10000,color:'#0d5c63'};
+ return `<div class="panel"><h2>${e?'Edit vehicle':'Add vehicle'}</h2><form onsubmit="return saveCar(event)" class="two"><label>Name<input name="name" required value="${esc(c.name)}"></label><label>Category<select name="cat">${['Economy','Sedan','SUV','Van'].map(x=>`<option ${c.cat==x?'selected':''}>${x}</option>`).join('')}</select></label><label>Seats<input name="seats" type="number" min="2" max="15" value="${c.seats}"></label><label>Transmission<select name="trans">${['Manual','Automatic'].map(x=>`<option ${c.trans==x?'selected':''}>${x}</option>`).join('')}</select></label><label>Fuel<select name="fuel">${['Petrol','Diesel','Hybrid','Electric'].map(x=>`<option ${c.fuel==x?'selected':''}>${x}</option>`).join('')}</select></label><label>Rate per day (PKR)<input name="rate" type="number" min="1000" value="${c.rate}"></label><div><button class="btn">${e?'Save changes':'Add vehicle'}</button> ${e?'<button type="button" class="btn alt" onclick="S.edit=null;render()">Cancel</button>':''}</div></form></div>
+ <div class="wrap"><table><tr><th>Car</th><th>Details</th><th>Rate</th><th>Listed</th><th></th></tr>${db.cars.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.cat} · ${c.seats} seats · ${c.trans} · ${c.fuel}</td><td>${pkr(c.rate)}</td><td><span class="tag ${c.active?'s-approved':'s-rejected'}">${c.active?'Available':'Hidden'}</span></td><td><button class="btn alt sm" onclick="S.edit=db.cars.find(x=>x.id==${c.id});render()">Edit</button> <button class="btn alt sm" onclick="db.cars.find(x=>x.id==${c.id}).active^=1;save();render()">${c.active?'Hide':'Show'}</button></td></tr>`).join('')}</table></div>`}
+function saveCar(e){e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),d={name:f.name.trim(),cat:f.cat,seats:+f.seats,trans:f.trans,fuel:f.fuel,rate:+f.rate};
+ if(S.edit)Object.assign(S.edit,d);else db.cars.push({id:db.nid.c++,color:['#0d5c63','#2f4858','#b3261e','#7a8b99'][db.nid.c%4],active:true,...d});S.edit=null;save();S.msg=['k','Vehicle saved.'];render();return false}
+function aMaint(){return `<div class="panel"><h2>Log maintenance</h2><form onsubmit="return addM(event)" class="two"><label>Car<select name="car">${db.cars.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label><label>Work done<input name="note" required maxlength="100"></label><label>From<input name="from" type="date" value="${today}" required></label><label>To<input name="to" type="date" value="${today}" required></label><label>Cost (PKR)<input name="cost" type="number" min="0" value="0"></label><div><button class="btn">Add record</button></div></form><p class="meta">Cars with an open record are blocked from booking during those dates.</p></div>
+ <div class="wrap"><table><tr><th>Car</th><th>Work</th><th>Dates</th><th>Cost</th><th>Status</th><th></th></tr>${db.maint.map(m=>`<tr><td>${cn(m.carId)}</td><td>${esc(m.note)}</td><td>${m.from} → ${m.to}</td><td>${pkr(m.cost)}</td><td><span class="tag ${m.open?'s-pending':'s-completed'}">${m.open?'Open':'Done'}</span></td><td>${m.open?`<button class="btn alt sm" onclick="db.maint.find(x=>x.id==${m.id}).open=false;save();render()">Mark done</button>`:''}</td></tr>`).join('')}</table></div>`}
+function addM(e){e.preventDefault();const f=Object.fromEntries(new FormData(e.target));if(f.to<f.from){S.msg=['e','End date must not be before the start date.'];render();return false}
+ db.maint.push({id:db.nid.m++,carId:+f.car,from:f.from,to:f.to,note:f.note.trim(),cost:+f.cost,open:true});save();S.msg=['k','Maintenance record added.'];render();return false}
+function aPay(){return db.payments.length?`<div class="wrap"><table><tr><th>#</th><th>Booking</th><th>Customer</th><th>Amount</th><th>Method</th><th>Date</th></tr>${db.payments.map(p=>{const b=db.bookings.find(x=>x.id==p.bookingId);return `<tr><td>${p.id}</td><td>#${p.bookingId} ${cn(b.carId)}</td><td>${un(b.userId)}</td><td>${pkr(p.amount)}</td><td>${p.method}</td><td>${p.date}</td></tr>`}).join('')}</table></div>`:'<div class="empty">No payments recorded yet.</div>'}
+function aCust(){return `<div class="wrap"><table><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Bookings</th></tr>${db.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.phone)}</td><td>${u.role}</td><td>${db.bookings.filter(b=>b.userId==u.id).length}</td></tr>`).join('')}</table></div>`}
+function aRep(){const ok=db.bookings.filter(b=>['approved','completed'].includes(b.status)),inc=db.payments.reduce((s,p)=>s+p.amount,0),mc=db.maint.reduce((s,m)=>s+m.cost,0);
+ const by=db.cars.map(c=>[c.name,ok.filter(b=>b.carId==c.id).length]).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,by[0][1]);
+ return `<div class="kpis"><div class="kpi"><b>${db.bookings.length}</b>Total bookings</div><div class="kpi"><b>${db.bookings.filter(b=>b.status=='pending').length}</b>Awaiting approval</div><div class="kpi"><b>${pkr(inc)}</b>Payments received</div><div class="kpi"><b>${pkr(mc)}</b>Maintenance cost</div><div class="kpi"><b>${pkr(inc-mc)}</b>Net income</div></div>
+ <div class="panel"><h2>Approved bookings by car</h2>${by.map(([n,v])=>`<div style="display:flex;gap:10px;align-items:center;margin:4px 0"><span style="width:140px">${esc(n)}</span><span style="height:12px;border-radius:3px;background:var(--pri);width:${v/mx*60}%;min-width:2px"></span>${v}</div>`).join('')}</div>`}
+render();
+</script></body></html>
